@@ -33,8 +33,8 @@ jobs:
       # Step 4: Create Python files from secrets
       - name: Generate Python scripts from Secrets
         run: |
-          echo "${{ secrets.ARTISTIC_PAINTING_PROCESSOR }}" > artistic_painting_processor.py
-          echo "${{ secrets.ADD_FADING_EDGES }}" > add_fading_edges.py
+          printf "%s\n" "${{ secrets.ARTISTIC_PAINTING_PROCESSOR }}" > artistic_painting_processor.py
+          printf "%s\n" "${{ secrets.ADD_FADING_EDGES }}" > add_fading_edges.py
 
       # Step 5: Run Python script - artistic painting processor
       - name: Run Python script - artistic painting processor
