@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  build-and-commit:
+  start-drawing-workflow:
     runs-on: ubuntu-latest
 
     steps:
