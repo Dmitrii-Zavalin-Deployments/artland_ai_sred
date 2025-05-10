@@ -30,6 +30,10 @@ def delete_file_from_dropbox(dbx, file_path, log_file):
 
 # Function to download JPG images from a specified Dropbox folder and delete them afterwards
 def download_jpgs_from_dropbox(dropbox_folder, local_folder, refresh_token, client_id, client_secret, log_file_path):
+    # Ensure dropbox_folder path starts with '/'
+    if not dropbox_folder.startswith('/'):
+        dropbox_folder = f"/{dropbox_folder}"
+
     # Refresh the access token
     access_token = refresh_access_token(refresh_token, client_id, client_secret)
     dbx = dropbox.Dropbox(access_token)
