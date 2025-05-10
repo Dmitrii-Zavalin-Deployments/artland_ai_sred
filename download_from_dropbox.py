@@ -28,23 +28,16 @@ def delete_file_from_dropbox(dbx, file_path, log_file):
         log_file.write(f"Failed to delete file: {file_path}, error: {e}\n")
         print(f"Failed to delete file: {file_path}, error: {e}")  # Print error to GitHub Actions logs
 
-# Function to download PDFs from a specified Dropbox folder and delete them afterwards
-def download_pdfs_from_dropbox(dropbox_folder, local_folder, refresh_token, client_id, client_secret, log_file_path, file_list_path=None):
+# Function to download JPG images from a specified Dropbox folder and delete them afterwards
+def download_jpgs_from_dropbox(dropbox_folder, local_folder, refresh_token, client_id, client_secret, log_file_path):
     # Refresh the access token
     access_token = refresh_access_token(refresh_token, client_id, client_secret)
     dbx = dropbox.Dropbox(access_token)
 
     with open(log_file_path, "a") as log_file:
-        log_file.write("Starting download process...\n")
+        log_file.write("Starting download process for JPG files...\n")
         try:
             os.makedirs(local_folder, exist_ok=True)
-
-            # Initialize the list of files to download
-            files_to_download = []
-            if file_list_path and os.path.exists(file_list_path):
-                with open(file_list_path, 'r') as file_list:
-                    files_to_download = [line.strip() for line in file_list.readlines()]
-                log_file.write(f"Files to download: {files_to_download}\n")
 
             # Handle pagination
             has_more = True
@@ -57,23 +50,21 @@ def download_pdfs_from_dropbox(dropbox_folder, local_folder, refresh_token, clie
                 log_file.write(f"Listing files in Dropbox folder: {dropbox_folder}\n")
 
                 for entry in result.entries:
-                    if isinstance(entry, dropbox.files.FileMetadata) and entry.name.endswith('.pdf'):
-                        file_name_without_extension = os.path.splitext(entry.name)[0]
-                        if not files_to_download or file_name_without_extension in files_to_download:
-                            local_path = os.path.join(local_folder, entry.name)
-                            with open(local_path, "wb") as f:
-                                metadata, res = dbx.files_download(path=entry.path_lower)
-                                f.write(res.content)
-                            log_file.write(f"Downloaded {entry.name} to {local_path}\n")
-                            print(entry.name)  # Print only the name of the downloaded file to GitHub Actions logs
+                    if isinstance(entry, dropbox.files.FileMetadata) and entry.name.lower().endswith('.jpg'):
+                        local_path = os.path.join(local_folder, entry.name)
+                        with open(local_path, "wb") as f:
+                            metadata, res = dbx.files_download(path=entry.path_lower)
+                            f.write(res.content)
+                        log_file.write(f"Downloaded {entry.name} to {local_path}\n")
+                        print(entry.name)  # Print only the name of the downloaded file to GitHub Actions logs
 
-                            # Delete the file from Dropbox after downloading
-                            delete_file_from_dropbox(dbx, entry.path_lower, log_file)
+                        # Delete the file from Dropbox after downloading
+                        delete_file_from_dropbox(dbx, entry.path_lower, log_file)
 
                 has_more = result.has_more
                 cursor = result.cursor
 
-            log_file.write("Download and delete process completed successfully.\n")
+            log_file.write("Download and delete process for JPG files completed successfully.\n")
         except dropbox.exceptions.ApiError as err:
             log_file.write(f"Error downloading files: {err}\n")
             print(f"Error downloading files: {err}")  # Log the error in GitHub Actions
@@ -83,6 +74,12 @@ def download_pdfs_from_dropbox(dropbox_folder, local_folder, refresh_token, clie
 
 # Entry point for the script
 if __name__ == "__main__":
+    # Validate command-line arguments
+    if len(sys.argv) < 7:
+        print("[ERROR] Missing required arguments! Expected format:")
+        print("python3 download_from_dropbox.py <dropbox_folder> <local_folder> <refresh_token> <client_id> <client_secret> <log_file>")
+        sys.exit(1)  # Exit to prevent further errors
+
     # Read command-line arguments
     dropbox_folder = sys.argv[1]  # Dropbox folder path
     local_folder = sys.argv[2]  # Local folder path
@@ -91,7 +88,8 @@ if __name__ == "__main__":
     client_secret = sys.argv[5]  # Dropbox client secret
     log_file_path = sys.argv[6]  # Path to the log file
 
-    # Call the function
-    download_pdfs_from_dropbox(dropbox_folder, local_folder, refresh_token, client_id, client_secret, log_file_path)
+    # Call the function to download JPGs
+    download_jpgs_from_dropbox(dropbox_folder, local_folder, refresh_token, client_id, client_secret, log_file_path)
+
 
 
