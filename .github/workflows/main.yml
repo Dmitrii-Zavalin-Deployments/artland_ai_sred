@@ -1,0 +1,72 @@
+name: Start Drawing Workflow
+
+on:
+  # Enables manual trigger via "Run workflow" button
+  workflow_dispatch:
+  # Automatically runs when a push or commit is made to the master branch
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install Python 3
+      - name: Install Python 3
+        run: |
+          sudo apt update
+          sudo apt install -y python3 python3-pip
+          python3 --version # Verify Python installation
+
+      # Step 3: Install Python dependencies globally
+      - name: Install Python dependencies globally
+        run: |
+          pip3 install --upgrade pip
+          pip3 install -r requirements.txt
+
+      # Step 4: Create Python files from secrets
+      - name: Generate Python scripts from Secrets
+        run: |
+          echo "${{ secrets.ARTISTIC_PAINTING_PROCESSOR }}" > artistic_painting_processor.py
+          echo "${{ secrets.ADD_FADING_EDGES }}" > add_fading_edges.py
+
+      # Step 5: Run Python script - artistic painting processor
+      - name: Run Python script - artistic painting processor
+        run: python3 artistic_painting_processor.py
+
+      # Step 6: Run Python script - add fading edges to artistic painting
+      - name: Run Python script - add fading edges
+        run: python3 add_fading_edges.py
+
+      # ---- COMMENTED OUT GIT OPERATIONS ----
+      # # Step 7: Configure Git using secrets for user name and email
+      # - name: Set up Git with Secrets
+      #   run: |
+      #     git config user.name "${{ secrets.GIT_USER_NAME }}"
+      #     git config user.email "${{ secrets.GIT_USER_EMAIL }}"
+
+      # # Step 8: Add only specific folders to the commit
+      # - name: Add Changes from Specific Folders
+      #   run: |
+      #     git add book_compilation/
+      #     git add converted_sketches/
+      #     git add original_photos/
+
+      # # Step 9: Commit the changes to the master branch
+      # - name: Commit Changes
+      #   run: |
+      #     git commit -m "Automated commit - update by artistic painting processor and fading edges script" || echo "No changes to commit"
+
+      # # Step 10: Push to the master branch
+      # - name: Push to Master Branch
+      #   run: |
+      #     git push origin master
+
+
+
