@@ -30,22 +30,29 @@ jobs:
         run: |
           pip install dropbox requests
 
-      # Step 4: Generate Python scripts
+      # Step 4: Create required folders
+      - name: Create required folders
+        run: |
+          mkdir -p original_photos
+          mkdir -p converted_sketches
+          mkdir -p book_compilation
+
+      # Step 5: Run Dropbox download script with correct arguments
+      - name: Run download_from_dropbox.py
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        run: python3 download_from_dropbox.py "artland_ai/original_photos" "original_photos" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
+
+      # Step 6: Generate Python scripts
       - name: Generate Python scripts from Secrets
         env:
           ARTISTIC_PAINTING_PROCESSOR: "${{ secrets.ARTISTIC_PAINTING_PROCESSOR }}"
           ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}"
         run: python3 generate_scripts.py
 
-      # Step 5: Run Dropbox download script
-      - name: Run download_from_dropbox.py
-        env:
-          APP_KEY: ${{ secrets.APP_KEY }}
-          APP_SECRET: ${{ secrets.APP_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: python3 download_from_dropbox.py
-
-      # Step 6: Run generated Python scripts
+      # Step 7: Run generated Python scripts
       - name: Run artistic painting processor
         run: python3 artistic_painting_processor.py
 
