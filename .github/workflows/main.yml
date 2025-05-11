@@ -43,7 +43,7 @@ jobs:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: python3 download_from_dropbox.py "artland_ai/original_photos" "original_photos" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
+        run: python3 download_from_dropbox.py "/artland_ai/original_photos" "original_photos" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
 
       # Step 6: Generate Python scripts
       - name: Generate Python scripts from Secrets
@@ -58,6 +58,14 @@ jobs:
 
       - name: Run fading edges processor
         run: python3 add_fading_edges.py
+
+      # Step 8: Upload processed sketches to Dropbox
+      - name: Run upload_to_dropbox.py
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        run: python3 upload_to_dropbox.py "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}"
 
 
 
