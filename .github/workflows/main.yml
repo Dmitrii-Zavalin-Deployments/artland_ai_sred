@@ -52,6 +52,10 @@ jobs:
           ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}"
         run: python3 generate_scripts.py
 
+      # Step 6.5: Display directory structure
+      - name: List directory structure
+        run: ls -R
+
       # Step 7: Run generated Python scripts
       - name: Run artistic painting processor
         run: python3 artistic_painting_processor.py
