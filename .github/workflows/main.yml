@@ -25,46 +25,47 @@ jobs:
           pip3 install --upgrade pip
           pip3 install -r requirements.txt
 
-      # Step 3: Install additional dependencies
       - name: Install dependencies
         run: |
           pip install dropbox requests
 
-      # Step 4: Create required folders
       - name: Create required folders
         run: |
           mkdir -p original_photos
           mkdir -p converted_sketches
           mkdir -p book_compilation
 
-      # Step 5: Run Dropbox download script with correct arguments
       - name: Run download_from_dropbox.py
+        id: download_dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: python3 download_from_dropbox.py "/artland_ai/original_photos" "original_photos" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
 
-      # Step 6: Generate Python scripts
+      - name: Check for photo.jpg
+        run: |
+          if [[ -f "original_photos/photo.jpg" ]]; then
+            echo "photo.jpg found."
+          else
+            echo "Error: photo.jpg not found in original_photos."
+            echo "Please upload your image to https://www.dropbox.com/home/ArtLand_AI/original_photos and ensure it is named 'photo.jpg'."
+            exit 1
+          fi
+
       - name: Generate Python scripts from Secrets
         env:
           ARTISTIC_PAINTING_PROCESSOR: "${{ secrets.ARTISTIC_PAINTING_PROCESSOR }}"
           ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}"
         run: python3 generate_scripts.py
 
-      # Step 6.5: Display directory structure
-      - name: List directory structure
-        run: ls -R
-
-      # Step 7: Run generated Python scripts
       - name: Run artistic painting processor
         run: python3 artistic_painting_processor.py
 
       - name: Run fading edges processor
         run: python3 add_fading_edges.py
 
-      # Step 8: Upload processed sketches to Dropbox
-      - name: Run upload_to_dropbox.py
+      - name: Upload processed sketches to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
