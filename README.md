@@ -1,3 +1,3 @@
 # artland_ai_sred
 
-Use it on pictures without a digital zoom
+Use it on photo without a digital zoom
