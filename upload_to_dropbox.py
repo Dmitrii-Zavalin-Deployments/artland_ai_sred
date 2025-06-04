@@ -31,15 +31,8 @@ def upload_file_to_dropbox(local_file_path, dropbox_file_path, refresh_token, cl
     except Exception as e:
         print(f"Failed to upload file to Dropbox: {e}")
 
-# Entry point for the script
-if __name__ == "__main__":
-    # Command-line arguments
-    local_directory = "converted_sketches"         # Path to the directory containing files
-    dropbox_folder = "/artland_ai/converted_sketches"  # Dropbox folder path
-    refresh_token = sys.argv[1]                    # Dropbox refresh token
-    client_id = sys.argv[2]                        # Dropbox client ID
-    client_secret = sys.argv[3]                    # Dropbox client secret
-
+# Function to upload all files from a local directory to Dropbox
+def upload_directory(local_directory, dropbox_folder, refresh_token, client_id, client_secret):
     # Check if the local directory exists
     if not os.path.isdir(local_directory):
         print(f"[ERROR] Directory '{local_directory}' does not exist.")
@@ -54,7 +47,20 @@ if __name__ == "__main__":
         if os.path.isfile(local_file_path):
             upload_file_to_dropbox(local_file_path, dropbox_file_path, refresh_token, client_id, client_secret)
 
-    print("[INFO] All files from 'converted_sketches' have been uploaded to Dropbox.")
+    print(f"[INFO] All files from '{local_directory}' have been uploaded to Dropbox.")
+
+# Entry point for the script
+if __name__ == "__main__":
+    # Command-line arguments
+    refresh_token = sys.argv[1]      # Dropbox refresh token
+    client_id = sys.argv[2]          # Dropbox client ID
+    client_secret = sys.argv[3]      # Dropbox client secret
+
+    # Upload files from 'converted_sketches'
+    upload_directory("converted_sketches", "/artland_ai/converted_sketches", refresh_token, client_id, client_secret)
+
+    # Upload files from 'book_compilation'
+    upload_directory("book_compilation", "/artland_ai/book_compilation", refresh_token, client_id, client_secret)
 
 
 
