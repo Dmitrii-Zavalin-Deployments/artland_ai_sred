@@ -1,8 +1,7 @@
 import json
 import pdfkit
 import os
-from selenium import webdriver
-from PIL import Image
+import subprocess
 
 # Load magazine data from config.json
 with open("config.json", "r") as file:
@@ -67,15 +66,9 @@ config_pdf = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
 options = {"enable-local-file-access": None}
 pdfkit.from_file(html_path, pdf_path, options=options, configuration=config_pdf)
 
-# Convert HTML to JPG using Selenium (Headless Browser)
+# Convert PDF to JPG using ImageMagick
 jpg_path = os.path.join(output_dir, "magazine_cover.jpg")
-
-options = webdriver.FirefoxOptions()
-options.add_argument("--headless")
-driver = webdriver.Firefox(options=options)
-driver.get(f"file://{html_path}")
-driver.save_screenshot(jpg_path)
-driver.quit()
+subprocess.run(["convert", "-density", "300", pdf_path, "-quality", "90", jpg_path])
 
 print(f"✅ Magazine cover successfully generated:")
 print(f"   - HTML: {html_path}")
