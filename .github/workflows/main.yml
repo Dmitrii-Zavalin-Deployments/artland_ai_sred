@@ -45,7 +45,7 @@ jobs:
       - name: Generate Python scripts from Secrets
         env:
           ARTISTIC_PAINTING_PROCESSOR: "${{ secrets.ARTISTIC_PAINTING_PROCESSOR }}"
-          ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}
+          ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}"
         run: python3 generate_scripts.py
 
       - name: Run image processing loop
