@@ -27,9 +27,9 @@ def upload_file_to_dropbox(local_file_path, dropbox_file_path, refresh_token, cl
     try:
         with open(local_file_path, "rb") as f:
             dbx.files_upload(f.read(), dropbox_file_path, mode=dropbox.files.WriteMode.overwrite)
-        print(f"Uploaded file to Dropbox: {dropbox_file_path}")
+        print(f"✅ Uploaded file to Dropbox: {dropbox_file_path}")
     except Exception as e:
-        print(f"Failed to upload file to Dropbox: {e}")
+        print(f"❌ Failed to upload file to Dropbox: {e}")
 
 # Function to upload all files from a local directory to Dropbox
 def upload_directory(local_directory, dropbox_folder, refresh_token, client_id, client_secret):
@@ -47,7 +47,7 @@ def upload_directory(local_directory, dropbox_folder, refresh_token, client_id, 
         if os.path.isfile(local_file_path):
             upload_file_to_dropbox(local_file_path, dropbox_file_path, refresh_token, client_id, client_secret)
 
-    print(f"[INFO] All files from '{local_directory}' have been uploaded to Dropbox.")
+    print(f"[INFO] ✅ All files from '{local_directory}' have been uploaded to Dropbox.")
 
 # Entry point for the script
 if __name__ == "__main__":
@@ -61,6 +61,9 @@ if __name__ == "__main__":
 
     # Upload files from 'book_compilation'
     upload_directory("book_compilation", "/artland_ai/book_compilation", refresh_token, client_id, client_secret)
+
+    # Upload files from 'book_to_publish' (NEW ADDITION!)
+    upload_directory("book_to_publish", "/artland_ai/book_to_publish", refresh_token, client_id, client_secret)
 
 
 
