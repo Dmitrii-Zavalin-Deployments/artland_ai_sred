@@ -52,6 +52,9 @@ jobs:
           chmod +x process_images.sh
           ./process_images.sh
 
+      - name: Generate background image
+        run: python3 generate_background.py
+      
       - name: Upload processed sketches and book compilation images to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
