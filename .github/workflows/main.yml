@@ -32,6 +32,7 @@ jobs:
           mkdir -p original_photos
           mkdir -p converted_sketches
           mkdir -p book_compilation
+          mkdir -p book_to_publish  # Ensure cover output folder exists
 
       - name: Run download_from_dropbox.py
         id: download_dropbox
@@ -44,7 +45,7 @@ jobs:
       - name: Generate Python scripts from Secrets
         env:
           ARTISTIC_PAINTING_PROCESSOR: "${{ secrets.ARTISTIC_PAINTING_PROCESSOR }}"
-          ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}"
+          ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}
         run: python3 generate_scripts.py
 
       - name: Run image processing loop
@@ -54,7 +55,10 @@ jobs:
 
       - name: Generate background image
         run: python3 generate_background.py
-      
+
+      - name: Generate magazine cover
+        run: python3 generate_cover.py  # NEW STEP: Generates PDF/JPG cover
+
       - name: Upload processed sketches and book compilation images to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
