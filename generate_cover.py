@@ -27,9 +27,15 @@ temp_html_path = os.path.join(output_dir, "temp_cover.html")
 with open(temp_html_path, "w") as file:
     file.write(html_content)
 
-# Generate PDF from HTML using wkhtmltopdf (MIT-licensed)
+# Configure wkhtmltopdf
+config_pdf = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")  # Adjust path if needed
+options = {
+    'enable-local-file-access': None  # Prevent network errors
+}
+
+# Generate PDF from HTML using wkhtmltopdf
 pdf_path = os.path.join(output_dir, "magazine_cover.pdf")
-pdfkit.from_file(temp_html_path, pdf_path)
+pdfkit.from_file(os.path.abspath(temp_html_path), os.path.abspath(pdf_path), options=options, configuration=config_pdf)
 
 # Generate JPG using Pillow
 background = Image.open("book_compilation/background.jpg")
@@ -53,3 +59,6 @@ background.save(jpg_path)
 print(f"✅ Magazine cover successfully generated in '{output_dir}/':")
 print(f"   - PDF: {pdf_path}")
 print(f"   - JPG: {jpg_path}")
+
+
+
