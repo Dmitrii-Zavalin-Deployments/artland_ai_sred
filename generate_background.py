@@ -12,34 +12,53 @@ OUTPUT_IMAGE = os.path.join(IMAGE_FOLDER, "background.jpg")
 
 # Parameters for filtering dark colors
 BRIGHTNESS_THRESHOLD = 50  # HSV V-channel threshold
+NUM_COLORS_PER_IMAGE = 5   # Reduced number of clusters per image for efficiency
 
-def extract_colors_from_images(image_folder, num_colors=10):
-    """Extracts dominant colors from images in the folder."""
-    image_files = glob(os.path.join(image_folder, "*.jpg"))
-    pixel_data = []
+# Global set for storing unique colors across all images
+unique_colors = set()
 
-    for file in image_files:
-        image = cv2.imread(file)
-        if image is None:
-            continue
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        reshaped_image = image.reshape(-1, 3)
-        pixel_data.extend(reshaped_image)
+def extract_colors_from_image(image_path):
+    """Extracts dominant colors from a single image."""
+    print(f"[INFO] Processing image: {image_path}")  # Log start
 
-    # Convert to NumPy array and use KMeans to find dominant colors
-    pixel_data = np.array(pixel_data)
-    kmeans = KMeans(n_clusters=num_colors, random_state=42, n_init=10)
-    kmeans.fit(pixel_data)
+    image = cv2.imread(image_path)
+    if image is None:
+        print(f"[WARNING] Could not read image: {image_path}")
+        return []
+
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    reshaped_image = image.reshape(-1, 3)
+
+    # Use KMeans to find dominant colors
+    kmeans = KMeans(n_clusters=NUM_COLORS_PER_IMAGE, random_state=42, n_init=10)
+    kmeans.fit(reshaped_image)
     colors = kmeans.cluster_centers_.astype(int)
 
     # Filter out dark colors using HSV
-    filtered_colors = []
+    filtered_colors = set()
     for color in colors:
         hsv = cv2.cvtColor(np.uint8([[color]]), cv2.COLOR_RGB2HSV)[0][0]
         if hsv[2] > BRIGHTNESS_THRESHOLD:  # V-channel brightness check
-            filtered_colors.append(tuple(color))
+            filtered_colors.add(tuple(color))  # Store as tuple for uniqueness
+
+    print(f"[INFO] Colors extracted from {image_path}: {filtered_colors}")
 
     return filtered_colors
+
+def process_images(image_folder):
+    """Loops through images, extracts colors, and accumulates unique colors."""
+    image_files = glob(os.path.join(image_folder, "*.jpg"))
+    
+    if not image_files:
+        print("[ERROR] No .jpg images found in the folder!")
+        return
+
+    for image_path in image_files:
+        extracted_colors = extract_colors_from_image(image_path)
+        unique_colors.update(extracted_colors)  # Add new unique colors
+    
+        # Log the updated unique color set after each image
+        print(f"[INFO] Updated unique color set: {unique_colors}")
 
 def create_gradient_background(colors, width=800, height=1200):
     """Generates a smooth gradient background using extracted light colors."""
@@ -47,8 +66,8 @@ def create_gradient_background(colors, width=800, height=1200):
 
     for i in range(height):
         blend_factor = i / height
-        color1 = np.array(colors[random.randint(0, len(colors)-1)])
-        color2 = np.array(colors[random.randint(0, len(colors)-1)])
+        color1 = np.array(random.choice(list(colors)))  # Convert set to list
+        color2 = np.array(random.choice(list(colors)))
         mixed_color = (1 - blend_factor) * color1 + blend_factor * color2
         gradient[i, :] = mixed_color
 
@@ -59,20 +78,20 @@ def save_background(image_array, output_path):
     background = Image.fromarray(image_array)
     background.save(output_path)
 
-# Extract dominant colors from images
-extracted_colors = extract_colors_from_images(IMAGE_FOLDER)
+# Process images sequentially, accumulating colors
+process_images(IMAGE_FOLDER)
 
 # If no colors extracted, set default light colors
-if not extracted_colors:
-    extracted_colors = [(255, 200, 220), (200, 220, 255), (220, 255, 200)]  # Light pastel tones
+if not unique_colors:
+    unique_colors = {(255, 200, 220), (200, 220, 255), (220, 255, 200)}  # Light pastel tones
 
 # Generate the background
-background_array = create_gradient_background(extracted_colors)
+background_array = create_gradient_background(unique_colors)
 
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"Background generated and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated and saved as: {OUTPUT_IMAGE}")
 
 
 
