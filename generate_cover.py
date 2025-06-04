@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 with open("config.json", "r") as file:
     config = json.load(file)
 
-# Ensure the output directory exists
+# Ensure output folder exists
 output_dir = "book_to_publish"
 os.makedirs(output_dir, exist_ok=True)
 
@@ -15,14 +15,12 @@ os.makedirs(output_dir, exist_ok=True)
 with open("cover_template.html", "r") as file:
     html_template = file.read()
 
-# Replace placeholders with actual content
-html_content = html_template.format(
-    TITLE=config["title"],
-    ISSUE=config["issue"],
-    TAGLINE=config["tagline"],
-    SUBTITLE=config["subtitle"],
-    AUTHOR=config["author"]
-)
+# SAFE placeholder replacement (avoids KeyError)
+html_content = html_template.replace("{TITLE}", config.get("title", ""))
+html_content = html_content.replace("{ISSUE}", config.get("issue", ""))
+html_content = html_content.replace("{TAGLINE}", config.get("tagline", ""))
+html_content = html_content.replace("{SUBTITLE}", config.get("subtitle", ""))
+html_content = html_content.replace("{AUTHOR}", config.get("author", ""))
 
 # Save modified HTML
 temp_html_path = os.path.join(output_dir, "temp_cover.html")
@@ -37,7 +35,7 @@ pdfkit.from_file(temp_html_path, pdf_path)
 background = Image.open("book_compilation/background.jpg")
 draw = ImageDraw.Draw(background)
 
-# Load fonts (ensure free fonts exist in project)
+# Load fonts (ensure they exist in the project)
 font_title = ImageFont.truetype("arial.ttf", 60)
 font_subtitle = ImageFont.truetype("arial.ttf", 30)
 
@@ -55,6 +53,3 @@ background.save(jpg_path)
 print(f"✅ Magazine cover successfully generated in '{output_dir}/':")
 print(f"   - PDF: {pdf_path}")
 print(f"   - JPG: {jpg_path}")
-
-
-
