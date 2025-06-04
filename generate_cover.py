@@ -23,6 +23,7 @@ html_content = f"""
         body {{
             background: url("book_compilation/background.jpg") no-repeat center center fixed;
             background-size: cover;
+            background-color: skyblue; /* Updated fallback background */
             font-family: Arial, sans-serif;
             color: white;
             text-align: center;
@@ -39,8 +40,8 @@ html_content = f"""
         .title {{ font-size: 50px; font-weight: bold; text-transform: uppercase; }}
         .issue {{ font-size: 25px; margin-top: 10px; }}
         .tagline {{ font-size: 20px; font-style: italic; margin-top: 15px; }}
-        .subtitle {{ font-size: 18px; margin-top: 10px; opacity: 0.8; }}
-        .author {{ font-size: 18px; margin-top: 20px; opacity: 0.7; font-style: italic; }}
+        .subtitle {{ font-size: 18px; margin-top: 10px; }}
+        .author {{ font-size: 18px; margin-top: 20px; font-style: italic; }}
     </style>
 </head>
 <body>
@@ -60,10 +61,14 @@ html_path = os.path.join(output_dir, "magazine_cover.html")
 with open(html_path, "w") as file:
     file.write(html_content)
 
-# Convert HTML to PDF using wkhtmltopdf
+# Convert HTML to PDF using wkhtmltopdf (forcing full rendering)
 pdf_path = os.path.join(output_dir, "magazine_cover.pdf")
 config_pdf = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
-options = {"enable-local-file-access": None}
+options = {
+    "enable-local-file-access": None,
+    "javascript-delay": "2000",  # Ensures full rendering before conversion
+    "no-stop-slow-scripts": None
+}
 pdfkit.from_file(html_path, pdf_path, options=options, configuration=config_pdf)
 
 # Convert PDF to JPG using ImageMagick
