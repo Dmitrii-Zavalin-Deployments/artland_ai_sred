@@ -6,5 +6,6 @@ torch
 torchvision
 scikit-learn
 pdfkit
+selenium
 
 
