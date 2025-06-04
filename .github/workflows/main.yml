@@ -39,17 +39,7 @@ jobs:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: python3 download_from_dropbox.py "/artland_ai/original_photos" "original_photos" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
-
-      - name: Check for photo.jpg
-        run: |
-          if [[ -f "original_photos/photo.jpg" ]]; then
-            echo "photo.jpg found."
-          else
-            echo "Error: photo.jpg not found in original_photos."
-            echo "Please upload your image to https://www.dropbox.com/home/ArtLand_AI/original_photos and ensure it is named 'photo.jpg'."
-            exit 1
-          fi
+        run: python3 download_from_dropbox.py "/artland_ai/google_photo_albums" "google_photo_albums" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
 
       - name: Generate Python scripts from Secrets
         env:
@@ -57,18 +47,12 @@ jobs:
           ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}"
         run: python3 generate_scripts.py
 
-      - name: Run artistic painting processor
-        run: python3 artistic_painting_processor.py
-
-      - name: Run fading edges processor
-        run: python3 add_fading_edges.py
-
-      - name: Make sequential_image_saver.sh executable and run it
+      - name: Run image processing loop
         run: |
-          chmod +x sequential_image_saver.sh
-          ./sequential_image_saver.sh
+          chmod +x process_images.sh
+          ./process_images.sh
 
-      - name: Upload processed sketches to Dropbox
+      - name: Upload processed sketches and book compilation images to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
