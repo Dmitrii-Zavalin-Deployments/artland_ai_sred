@@ -63,6 +63,11 @@ jobs:
       - name: Run fading edges processor
         run: python3 add_fading_edges.py
 
+      - name: Make sequential_image_saver.sh executable and run it
+        run: |
+          chmod +x sequential_image_saver.sh
+          ./sequential_image_saver.sh
+
       - name: Upload processed sketches to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
