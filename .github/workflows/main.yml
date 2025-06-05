@@ -3,8 +3,6 @@ name: Start Drawing Workflow
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
 
 jobs:
   start-drawing-workflow:
@@ -14,10 +12,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Python 3
+      - name: Install Python 3 and wkhtmltopdf
         run: |
           sudo apt update
-          sudo apt install -y python3 python3-pip
+          sudo apt install -y python3 python3-pip wkhtmltopdf imagemagick
           python3 --version
 
       - name: Install Python dependencies globally
@@ -34,6 +32,7 @@ jobs:
           mkdir -p original_photos
           mkdir -p converted_sketches
           mkdir -p book_compilation
+          mkdir -p book_to_publish  # Ensure cover output folder exists
 
       - name: Run download_from_dropbox.py
         id: download_dropbox
@@ -41,17 +40,7 @@ jobs:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: python3 download_from_dropbox.py "/artland_ai/original_photos" "original_photos" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
-
-      - name: Check for photo.jpg
-        run: |
-          if [[ -f "original_photos/photo.jpg" ]]; then
-            echo "photo.jpg found."
-          else
-            echo "Error: photo.jpg not found in original_photos."
-            echo "Please upload your image to https://www.dropbox.com/home/ArtLand_AI/original_photos and ensure it is named 'photo.jpg'."
-            exit 1
-          fi
+        run: python3 download_from_dropbox.py "/artland_ai/google_photo_albums" "google_photo_albums" "${{ secrets.REFRESH_TOKEN }}" "${{ secrets.APP_KEY }}" "${{ secrets.APP_SECRET }}" "download_log.txt"
 
       - name: Generate Python scripts from Secrets
         env:
@@ -59,13 +48,18 @@ jobs:
           ADD_FADING_EDGES: "${{ secrets.ADD_FADING_EDGES }}"
         run: python3 generate_scripts.py
 
-      - name: Run artistic painting processor
-        run: python3 artistic_painting_processor.py
+      - name: Run image processing loop
+        run: |
+          chmod +x process_images.sh
+          ./process_images.sh
 
-      - name: Run fading edges processor
-        run: python3 add_fading_edges.py
+      - name: Generate background image
+        run: python3 generate_background.py
 
-      - name: Upload processed sketches to Dropbox
+      - name: Generate photo collection PDF
+        run: python3 generate_photo_pdf.py
+
+      - name: Upload processed sketches and book compilation images to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
