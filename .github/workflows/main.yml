@@ -56,8 +56,8 @@ jobs:
       - name: Generate background image
         run: python3 generate_background.py
 
-      - name: Generate magazine cover
-        run: python3 generate_cover.py  # NEW STEP: Generates PDF/JPG cover
+      - name: Generate photo collection PDF
+        run: python3 generate_photo_pdf.py
 
       - name: Upload processed sketches and book compilation images to Dropbox
         env:
