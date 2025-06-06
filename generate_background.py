@@ -60,16 +60,16 @@ def process_images(image_folder):
     # Log the updated unique color list
     print(f"[INFO] Updated unique color list: {unique_colors}")
 
-def group_colors_by_hue(colors):
-    """Groups colors by hue similarity for smoother transitions."""
+def group_colors_by_hue_and_lightness(colors):
+    """Groups colors by hue and lightness similarity for smoother transitions."""
     if not colors:
         return colors
 
-    # Convert to HSV for better grouping by hue
+    # Convert to HSV for better grouping by hue and brightness
     colors_hsv = [cv2.cvtColor(np.uint8([[color]]), cv2.COLOR_RGB2HSV)[0][0] for color in colors]
-    
-    # Sort colors by Hue value
-    colors_sorted = [color for _, color in sorted(zip([hsv[0] for hsv in colors_hsv], colors))]
+
+    # Sort colors by Hue and Lightness (V channel)
+    colors_sorted = [color for _, _, color in sorted(zip([hsv[0] for hsv in colors_hsv], [hsv[2] for hsv in colors_hsv], colors))]
 
     return colors_sorted
 
@@ -77,19 +77,24 @@ def create_smoother_gradient_background(colors, width=800, height=1200):
     """Generates a **highly blended, grouped-color gradient background**."""
     gradient = np.zeros((height, width, 3), dtype=np.uint8)
 
-    colors = group_colors_by_hue(colors)  # Group colors before blending
+    colors = group_colors_by_hue_and_lightness(colors)  # Group colors by hue and lightness before blending
 
     for i in range(height):
-        blend_factor = np.cos((i / height) * np.pi / 2)  # Cosine wave for smooth blending
+        blend_factor = np.sin((i / height) * np.pi)  # Sin wave for dynamic blending
         color1 = np.array(random.choice(colors))
         color2 = np.array(random.choice(colors))
         color3 = np.array(random.choice(colors))  # Additional refined blending
-        
+
         mixed_color = (
             (1 - blend_factor) * color1 +
-            (blend_factor * 0.5) * color2 +
-            (blend_factor * 0.5) * color3
+            (blend_factor * 0.4) * color2 +
+            (blend_factor * 0.6) * color3
         )
+
+        # Introduce subtle variations to reduce abrupt shifts
+        noise_intensity = random.randint(-10, 10)
+        mixed_color = np.clip(mixed_color + noise_intensity, 0, 255)
+
         gradient[i, :] = mixed_color
 
     return gradient
@@ -112,7 +117,7 @@ background_array = create_smoother_gradient_background(unique_colors)
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated with **grouped color blending** and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated with **stronger blending, color harmony, and shading variations** and saved as: {OUTPUT_IMAGE}")
 
 
 
