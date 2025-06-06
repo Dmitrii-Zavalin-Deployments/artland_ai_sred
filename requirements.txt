@@ -6,6 +6,6 @@ torch
 torchvision
 scikit-learn
 pdfkit
-selenium
+PyPDF2
 
 
