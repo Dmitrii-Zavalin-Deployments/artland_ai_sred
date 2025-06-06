@@ -74,13 +74,14 @@ def group_colors_by_hue_and_lightness(colors):
     return colors_sorted
 
 def create_smoother_gradient_background(colors, width=800, height=1200):
-    """Generates a **highly blended, grouped-color gradient background** with soft edge blurring."""
+    """Generates a **highly blended, grouped-color gradient background** with soft edge blurring and vertical fade."""
     gradient = np.zeros((height, width, 3), dtype=np.uint8)
 
     colors = group_colors_by_hue_and_lightness(colors)  # Group colors by hue and lightness before blending
 
     for i in range(height):
         blend_factor = np.sin((i / height) * np.pi)  # Sin wave for dynamic blending
+        fade_factor = (i / height) * 0.3  # Subtle vertical fade effect
         color1 = np.array(random.choice(colors))
         color2 = np.array(random.choice(colors))
         color3 = np.array(random.choice(colors))  # Additional refined blending
@@ -95,10 +96,13 @@ def create_smoother_gradient_background(colors, width=800, height=1200):
         noise_intensity = random.randint(-10, 10)
         mixed_color = np.clip(mixed_color + noise_intensity, 0, 255)
 
+        # Apply vertical fade effect
+        mixed_color = np.clip(mixed_color * (1 - fade_factor), 0, 255)
+
         gradient[i, :] = mixed_color
 
     # Apply directional blur to soften edges
-    gradient = cv2.GaussianBlur(gradient, (9, 9), 3)  
+    gradient = cv2.GaussianBlur(gradient, (15, 15), 5)  # Increased blur strength for smoother transitions
 
     return gradient
 
@@ -114,12 +118,13 @@ process_images(IMAGE_FOLDER)
 if not unique_colors:
     unique_colors = [[255, 200, 220], [200, 220, 255], [220, 255, 200]]  # Light pastel tones
 
-# Generate the **grouped and smoother** background
+# Generate the **grouped, blended, and softened** background
 background_array = create_smoother_gradient_background(unique_colors)
 
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated with **softened edges, gradient blur, and color harmony** and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated with **softened edges, enhanced blur strength, and vertical fade effect** and saved as: {OUTPUT_IMAGE}")
+
 
 
