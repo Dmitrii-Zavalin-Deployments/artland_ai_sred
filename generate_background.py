@@ -60,16 +60,22 @@ def process_images(image_folder):
         # Log the updated unique color set after each image
         print(f"[INFO] Updated unique color set: {unique_colors}")
 
-def create_smooth_gradient_background(colors, width=800, height=1200):
-    """Generates a **smoother, blended** gradient background using extracted light colors."""
+def create_smoother_gradient_background(colors, width=800, height=1200):
+    """Generates a **highly blended, soft gradient background** using extracted light colors."""
     gradient = np.zeros((height, width, 3), dtype=np.uint8)
 
-    # Create a smoothly blended transition between selected colors
+    # Introduce multi-point blending for smoother color transitions
     for i in range(height):
-        blend_factor = np.sin((i / height) * np.pi)  # Use sine wave for smooth transition
-        color1 = np.array(random.choice(list(colors)))  # Convert set to list
+        blend_factor = np.cos((i / height) * np.pi / 2)  # Cosine wave for smoother blending
+        color1 = np.array(random.choice(list(colors)))
         color2 = np.array(random.choice(list(colors)))
-        mixed_color = (1 - blend_factor) * color1 + blend_factor * color2
+        color3 = np.array(random.choice(list(colors)))  # Additional color for refined blending
+        
+        mixed_color = (
+            (1 - blend_factor) * color1 +
+            (blend_factor * 0.5) * color2 +
+            (blend_factor * 0.5) * color3
+        )
         gradient[i, :] = mixed_color
 
     return gradient
@@ -86,13 +92,13 @@ process_images(IMAGE_FOLDER)
 if not unique_colors:
     unique_colors = {(255, 200, 220), (200, 220, 255), (220, 255, 200)}  # Light pastel tones
 
-# Generate the smoother background
-background_array = create_smooth_gradient_background(unique_colors)
+# Generate the **smoother** background
+background_array = create_smoother_gradient_background(unique_colors)
 
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated with a smoother gradient and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated with a **highly blended gradient** and saved as: {OUTPUT_IMAGE}")
 
 
 
