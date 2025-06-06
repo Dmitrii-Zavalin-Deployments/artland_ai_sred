@@ -74,7 +74,7 @@ def group_colors_by_hue_and_lightness(colors):
     return colors_sorted
 
 def create_smoother_gradient_background(colors, width=800, height=1200):
-    """Generates a **highly blended, grouped-color gradient background**."""
+    """Generates a **highly blended, grouped-color gradient background** with soft edge blurring."""
     gradient = np.zeros((height, width, 3), dtype=np.uint8)
 
     colors = group_colors_by_hue_and_lightness(colors)  # Group colors by hue and lightness before blending
@@ -97,6 +97,9 @@ def create_smoother_gradient_background(colors, width=800, height=1200):
 
         gradient[i, :] = mixed_color
 
+    # Apply directional blur to soften edges
+    gradient = cv2.GaussianBlur(gradient, (9, 9), 3)  
+
     return gradient
 
 def save_background(image_array, output_path):
@@ -117,7 +120,6 @@ background_array = create_smoother_gradient_background(unique_colors)
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated with **stronger blending, color harmony, and shading variations** and saved as: {OUTPUT_IMAGE}")
-
+print(f"[INFO] Background generated with **softened edges, gradient blur, and color harmony** and saved as: {OUTPUT_IMAGE}")
 
 
