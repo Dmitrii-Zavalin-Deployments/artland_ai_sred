@@ -103,9 +103,10 @@ def create_smoother_gradient_background(colors, width=800, height=1200):
     return gradient
 
 def save_background(image_array, output_path):
-    """Saves the generated background image."""
+    """Saves the generated background image with specified DPI."""
     background = Image.fromarray(image_array)
-    background.save(output_path)
+    # Set the DPI to 350 for high-quality printing
+    background.save(output_path, dpi=(350, 350))
 
 # Process images sequentially, accumulating colors
 process_images(IMAGE_FOLDER)
@@ -120,6 +121,6 @@ background_array = create_smoother_gradient_background(unique_colors)
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated with **light-to-dark gradient positioning, softened edges, and enhanced blur strength** and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated with **light-to-dark gradient positioning, softened edges, enhanced blur strength, and 350 DPI** and saved as: {OUTPUT_IMAGE}")
 
 
