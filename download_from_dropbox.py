@@ -18,15 +18,17 @@ def refresh_access_token(refresh_token, client_id, client_secret):
     else:
         raise Exception("Failed to refresh access token")
 
-# Function to delete a file from Dropbox
-def delete_file_from_dropbox(dbx, file_path, log_file):
+# Function to delete all files in a specific Dropbox folder
+def delete_all_files_in_folder(dbx, folder_path, log_file):
     try:
-        dbx.files_delete_v2(file_path)
-        log_file.write(f"Deleted file from Dropbox: {file_path}\n")
-        print(f"Deleted file from Dropbox: {file_path}")  # Print to GitHub Actions logs
-    except Exception as e:
-        log_file.write(f"Failed to delete file: {file_path}, error: {e}\n")
-        print(f"Failed to delete file: {file_path}, error: {e}")  # Print error to GitHub Actions logs
+        result = dbx.files_list_folder(folder_path)
+        for entry in result.entries:
+            dbx.files_delete_v2(entry.path_lower)
+            log_file.write(f"Deleted file: {entry.path_lower}\n")
+            print(f"Deleted file: {entry.path_lower}")  # Print to GitHub Actions logs
+    except dropbox.exceptions.ApiError as e:
+        log_file.write(f"Failed to delete files in {folder_path}, error: {e}\n")
+        print(f"Failed to delete files in {folder_path}, error: {e}")  # Log error
 
 # Function to download JPG images from a specified Dropbox folder and delete them afterwards
 def download_jpgs_from_dropbox(dropbox_folder, local_folder, refresh_token, client_id, client_secret, log_file_path):
@@ -63,18 +65,32 @@ def download_jpgs_from_dropbox(dropbox_folder, local_folder, refresh_token, clie
                         print(entry.name)  # Print only the name of the downloaded file to GitHub Actions logs
 
                         # Delete the file from Dropbox after downloading
-                        delete_file_from_dropbox(dbx, entry.path_lower, log_file)
+                        dbx.files_delete_v2(entry.path_lower)
+                        log_file.write(f"Deleted {entry.path_lower}\n")
+                        print(f"Deleted {entry.path_lower}")
 
                 has_more = result.has_more
                 cursor = result.cursor
 
             log_file.write("Download and delete process for JPG files completed successfully.\n")
+
+            # **Now delete all files from the specified Dropbox folders**
+            folders_to_clear = [
+                "/artland_ai/book_compilation",
+                "/artland_ai/book_to_publish",
+                "/artland_ai/converted_sketches"
+            ]
+            for folder in folders_to_clear:
+                delete_all_files_in_folder(dbx, folder, log_file)
+                log_file.write(f"✅ All files in {folder} have been deleted.\n")
+                print(f"✅ All files in {folder} have been deleted.")
+
         except dropbox.exceptions.ApiError as err:
             log_file.write(f"Error downloading files: {err}\n")
-            print(f"Error downloading files: {err}")  # Log the error in GitHub Actions
+            print(f"Error downloading files: {err}")  # Log error
         except Exception as e:
             log_file.write(f"Unexpected error: {e}\n")
-            print(f"Unexpected error: {e}")  # Log the error in GitHub Actions
+            print(f"Unexpected error: {e}")  # Log error
 
 # Entry point for the script
 if __name__ == "__main__":
