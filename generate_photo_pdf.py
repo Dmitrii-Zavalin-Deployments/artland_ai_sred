@@ -9,7 +9,8 @@ github_workspace = os.getenv("GITHUB_WORKSPACE", os.getcwd())
 input_dir = os.path.join(github_workspace, "book_compilation")
 output_dir = os.path.join(github_workspace, "book_to_publish")
 background_image = os.path.join(input_dir, "background.jpg")
-pdf_path = os.path.join(output_dir, "photo_collection.pdf")
+photo_pdf_path = os.path.join(output_dir, "photo_collection.pdf")  # Formerly temp_photo_collection.pdf
+full_book_path = os.path.join(output_dir, "full_book_kdp.pdf")  # Formerly photo_collection.pdf
 
 # **Fix: Set Introduction.pdf path to the root of the repository**
 intro_pdf = os.path.join(github_workspace, "Introduction.pdf")  
@@ -31,17 +32,16 @@ if not image_files:
 
 print(f"✅ Found {len(image_files)} images to add to PDF.")
 
-# Convert images to a temporary PDF
-temp_pdf_path = os.path.join(output_dir, "temp_photo_collection.pdf")
+# Convert images to a photo collection PDF
 try:
     image_list = [Image.open(img).convert("RGB") for img in image_files]
-    image_list[0].save(temp_pdf_path, save_all=True, append_images=image_list[1:])
-    print(f"✅ Temporary image-based PDF created: {temp_pdf_path}")
+    image_list[0].save(photo_pdf_path, save_all=True, append_images=image_list[1:])
+    print(f"✅ Photo collection PDF created: {photo_pdf_path}")
 except Exception as e:
-    print(f"❌ Error generating temporary PDF file: {e}")
+    print(f"❌ Error generating photo collection PDF file: {e}")
     raise
 
-# Merge Introduction.pdf with the generated image-based PDF
+# Merge Introduction.pdf with the generated photo collection PDF
 try:
     merger = PdfMerger()
     
@@ -51,11 +51,11 @@ try:
     else:
         print(f"❌ Introduction PDF '{intro_pdf}' not found! Make sure it's in the repository root.")
 
-    merger.append(temp_pdf_path)
-    merger.write(pdf_path)
+    merger.append(photo_pdf_path)
+    merger.write(full_book_path)
     merger.close()
     
-    print(f"✅ Final merged PDF created: {pdf_path}")
+    print(f"✅ Final merged PDF created for KDP upload: {full_book_path}")
 except Exception as e:
     print(f"❌ Error merging PDFs: {e}")
     raise
@@ -71,7 +71,7 @@ if os.path.exists(background_image):
 else:
     print(f"❌ Background image '{background_image}' not found!")
 
-print("✅ Photo collection PDF with Introduction.pdf successfully saved in 'book_to_publish/'")
+print("✅ Full book PDF for KDP successfully saved in 'book_to_publish/'")
 
 
 
