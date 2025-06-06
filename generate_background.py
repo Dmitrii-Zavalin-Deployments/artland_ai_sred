@@ -14,8 +14,8 @@ OUTPUT_IMAGE = os.path.join(IMAGE_FOLDER, "background.jpg")
 BRIGHTNESS_THRESHOLD = 50  # HSV V-channel threshold
 NUM_COLORS_PER_IMAGE = 5   # Reduced number of clusters per image for efficiency
 
-# Global set for storing unique colors across all images
-unique_colors = set()
+# Global list to store extracted colors
+unique_colors = []
 
 def extract_colors_from_image(image_path):
     """Extracts dominant colors from a single image."""
@@ -34,12 +34,12 @@ def extract_colors_from_image(image_path):
     kmeans.fit(reshaped_image)
     colors = kmeans.cluster_centers_.astype(int)
 
-    # Filter out dark colors using HSV
-    filtered_colors = set()
+    # Filter and store light colors
+    filtered_colors = []
     for color in colors:
         hsv = cv2.cvtColor(np.uint8([[color]]), cv2.COLOR_RGB2HSV)[0][0]
         if hsv[2] > BRIGHTNESS_THRESHOLD:  # V-channel brightness check
-            filtered_colors.add(tuple(color))  # Store as tuple for uniqueness
+            filtered_colors.append(color.tolist())
 
     print(f"[INFO] Colors extracted from {image_path}: {filtered_colors}")
 
@@ -48,28 +48,42 @@ def extract_colors_from_image(image_path):
 def process_images(image_folder):
     """Loops through images, extracts colors, and accumulates unique colors."""
     image_files = glob(os.path.join(image_folder, "*.jpg"))
-    
+
     if not image_files:
         print("[ERROR] No .jpg images found in the folder!")
         return
 
     for image_path in image_files:
         extracted_colors = extract_colors_from_image(image_path)
-        unique_colors.update(extracted_colors)  # Add new unique colors
+        unique_colors.extend(extracted_colors)  # Add new extracted colors
+
+    # Log the updated unique color list
+    print(f"[INFO] Updated unique color list: {unique_colors}")
+
+def group_colors_by_hue(colors):
+    """Groups colors by hue similarity for smoother transitions."""
+    if not colors:
+        return colors
+
+    # Convert to HSV for better grouping by hue
+    colors_hsv = [cv2.cvtColor(np.uint8([[color]]), cv2.COLOR_RGB2HSV)[0][0] for color in colors]
     
-        # Log the updated unique color set after each image
-        print(f"[INFO] Updated unique color set: {unique_colors}")
+    # Sort colors by Hue value
+    colors_sorted = [color for _, color in sorted(zip([hsv[0] for hsv in colors_hsv], colors))]
+
+    return colors_sorted
 
 def create_smoother_gradient_background(colors, width=800, height=1200):
-    """Generates a **highly blended, soft gradient background** using extracted light colors."""
+    """Generates a **highly blended, grouped-color gradient background**."""
     gradient = np.zeros((height, width, 3), dtype=np.uint8)
 
-    # Introduce multi-point blending for smoother color transitions
+    colors = group_colors_by_hue(colors)  # Group colors before blending
+
     for i in range(height):
-        blend_factor = np.cos((i / height) * np.pi / 2)  # Cosine wave for smoother blending
-        color1 = np.array(random.choice(list(colors)))
-        color2 = np.array(random.choice(list(colors)))
-        color3 = np.array(random.choice(list(colors)))  # Additional color for refined blending
+        blend_factor = np.cos((i / height) * np.pi / 2)  # Cosine wave for smooth blending
+        color1 = np.array(random.choice(colors))
+        color2 = np.array(random.choice(colors))
+        color3 = np.array(random.choice(colors))  # Additional refined blending
         
         mixed_color = (
             (1 - blend_factor) * color1 +
@@ -90,15 +104,15 @@ process_images(IMAGE_FOLDER)
 
 # If no colors extracted, set default light colors
 if not unique_colors:
-    unique_colors = {(255, 200, 220), (200, 220, 255), (220, 255, 200)}  # Light pastel tones
+    unique_colors = [[255, 200, 220], [200, 220, 255], [220, 255, 200]]  # Light pastel tones
 
-# Generate the **smoother** background
+# Generate the **grouped and smoother** background
 background_array = create_smoother_gradient_background(unique_colors)
 
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated with a **highly blended gradient** and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated with **grouped color blending** and saved as: {OUTPUT_IMAGE}")
 
 
 
