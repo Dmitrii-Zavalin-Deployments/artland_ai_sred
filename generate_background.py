@@ -60,12 +60,13 @@ def process_images(image_folder):
         # Log the updated unique color set after each image
         print(f"[INFO] Updated unique color set: {unique_colors}")
 
-def create_gradient_background(colors, width=800, height=1200):
-    """Generates a smooth gradient background using extracted light colors."""
+def create_smooth_gradient_background(colors, width=800, height=1200):
+    """Generates a **smoother, blended** gradient background using extracted light colors."""
     gradient = np.zeros((height, width, 3), dtype=np.uint8)
 
+    # Create a smoothly blended transition between selected colors
     for i in range(height):
-        blend_factor = i / height
+        blend_factor = np.sin((i / height) * np.pi)  # Use sine wave for smooth transition
         color1 = np.array(random.choice(list(colors)))  # Convert set to list
         color2 = np.array(random.choice(list(colors)))
         mixed_color = (1 - blend_factor) * color1 + blend_factor * color2
@@ -85,13 +86,13 @@ process_images(IMAGE_FOLDER)
 if not unique_colors:
     unique_colors = {(255, 200, 220), (200, 220, 255), (220, 255, 200)}  # Light pastel tones
 
-# Generate the background
-background_array = create_gradient_background(unique_colors)
+# Generate the smoother background
+background_array = create_smooth_gradient_background(unique_colors)
 
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated with a smoother gradient and saved as: {OUTPUT_IMAGE}")
 
 
 
