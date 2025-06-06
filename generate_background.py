@@ -60,29 +60,29 @@ def process_images(image_folder):
     # Log the updated unique color list
     print(f"[INFO] Updated unique color list: {unique_colors}")
 
-def group_colors_by_hue_and_lightness(colors):
-    """Groups colors by hue and lightness similarity for smoother transitions."""
+def group_colors_by_lightness(colors):
+    """Reorders colors so lighter shades move toward the top and darker ones toward the bottom."""
     if not colors:
         return colors
 
-    # Convert to HSV for better grouping by hue and brightness
+    # Convert to HSV for better sorting by brightness (V channel)
     colors_hsv = [cv2.cvtColor(np.uint8([[color]]), cv2.COLOR_RGB2HSV)[0][0] for color in colors]
 
-    # Sort colors by Hue and Lightness (V channel)
-    colors_sorted = [color for _, _, color in sorted(zip([hsv[0] for hsv in colors_hsv], [hsv[2] for hsv in colors_hsv], colors))]
+    # Sort colors by brightness (lightest to darkest)
+    colors_sorted = [color for _, color in sorted(zip([hsv[2] for hsv in colors_hsv], colors), reverse=True)]
 
     return colors_sorted
 
 def create_smoother_gradient_background(colors, width=800, height=1200):
-    """Generates a **highly blended, grouped-color gradient background** with soft edge blurring and vertical fade."""
+    """Generates a **highly blended, grouped-color gradient background** with light-to-dark transition."""
     gradient = np.zeros((height, width, 3), dtype=np.uint8)
 
-    colors = group_colors_by_hue_and_lightness(colors)  # Group colors by hue and lightness before blending
+    colors = group_colors_by_lightness(colors)  # Ensure lighter colors are at the top
 
     for i in range(height):
         blend_factor = np.sin((i / height) * np.pi)  # Sin wave for dynamic blending
         fade_factor = (i / height) * 0.3  # Subtle vertical fade effect
-        color1 = np.array(random.choice(colors))
+        color1 = np.array(colors[i % len(colors)])  # Select colors in descending brightness
         color2 = np.array(random.choice(colors))
         color3 = np.array(random.choice(colors))  # Additional refined blending
 
@@ -118,13 +118,13 @@ process_images(IMAGE_FOLDER)
 if not unique_colors:
     unique_colors = [[255, 200, 220], [200, 220, 255], [220, 255, 200]]  # Light pastel tones
 
-# Generate the **grouped, blended, and softened** background
+# Generate the **grouped, blended, and repositioned** background
 background_array = create_smoother_gradient_background(unique_colors)
 
 # Save the background image
 save_background(background_array, OUTPUT_IMAGE)
 
-print(f"[INFO] Background generated with **softened edges, enhanced blur strength, and vertical fade effect** and saved as: {OUTPUT_IMAGE}")
+print(f"[INFO] Background generated with **light-to-dark gradient positioning, softened edges, and enhanced blur strength** and saved as: {OUTPUT_IMAGE}")
 
 
 
