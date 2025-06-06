@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Get the absolute path for the workspace
+# Get the absolute path for the workspace (GitHub Actions sets this)
 WORKSPACE_PATH="${GITHUB_WORKSPACE}"
 
 # Folder containing the images
@@ -16,12 +16,12 @@ if [[ ! -f "$INPUT_FILE" ]]; then
     exit 1
 fi
 
-# Use ImageMagick to resample the image to 350 DPI
-magick "$INPUT_FILE" -resample 350 "$TEMP_FILE"
+# Use ImageMagick to set the density to 350 DPI
+convert "$INPUT_FILE" -density 350 "$TEMP_FILE"
 
 # Ensure the temporary file was created successfully
 if [[ ! -f "$TEMP_FILE" ]]; then
-    echo "[ERROR] Resampled image '$TEMP_FILE' not created!"
+    echo "[ERROR] Converted image '$TEMP_FILE' not created!"
     exit 1
 fi
 
@@ -29,7 +29,7 @@ fi
 mv "$TEMP_FILE" "$INPUT_FILE"
 
 # Confirmation message
-echo "[INFO] background.jpg successfully resampled to 350 DPI inside '$IMAGE_FOLDER'."
+echo "[INFO] background.jpg successfully converted to 350 DPI inside '$IMAGE_FOLDER'."
 
 
 
