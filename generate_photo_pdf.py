@@ -10,7 +10,9 @@ input_dir = os.path.join(github_workspace, "book_compilation")
 output_dir = os.path.join(github_workspace, "book_to_publish")
 background_image = os.path.join(input_dir, "background.jpg")
 pdf_path = os.path.join(output_dir, "photo_collection.pdf")
-intro_pdf = os.path.join(input_dir, "Introduction.pdf")
+
+# **Fix: Set Introduction.pdf path to the root of the repository**
+intro_pdf = os.path.join(github_workspace, "Introduction.pdf")  
 
 # Ensure output folder exists
 try:
@@ -47,7 +49,7 @@ try:
         merger.append(intro_pdf)
         print(f"✅ Introduction PDF '{intro_pdf}' added as first page.")
     else:
-        print(f"❌ Introduction PDF '{intro_pdf}' not found!")
+        print(f"❌ Introduction PDF '{intro_pdf}' not found! Make sure it's in the repository root.")
 
     merger.append(temp_pdf_path)
     merger.write(pdf_path)
