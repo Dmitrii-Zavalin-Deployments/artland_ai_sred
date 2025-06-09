@@ -9,11 +9,7 @@ github_workspace = os.getenv("GITHUB_WORKSPACE", os.getcwd())
 input_dir = os.path.join(github_workspace, "book_compilation")
 output_dir = os.path.join(github_workspace, "book_to_publish")
 background_image = os.path.join(input_dir, "background.jpg")
-photo_pdf_path = os.path.join(output_dir, "photo_collection.pdf")  # Formerly temp_photo_collection.pdf
-full_book_path = os.path.join(output_dir, "full_book_kdp.pdf")  # Formerly photo_collection.pdf
-
-# **Fix: Set Introduction.pdf path to the root of the repository**
-intro_pdf = os.path.join(github_workspace, "Introduction.pdf")  
+photo_pdf_path = os.path.join(output_dir, "photo_collection.pdf")  # Final output PDF
 
 # Ensure output folder exists
 try:
@@ -41,25 +37,6 @@ except Exception as e:
     print(f"❌ Error generating photo collection PDF file: {e}")
     raise
 
-# Merge Introduction.pdf with the generated photo collection PDF
-try:
-    merger = PdfMerger()
-    
-    if os.path.exists(intro_pdf):
-        merger.append(intro_pdf)
-        print(f"✅ Introduction PDF '{intro_pdf}' added as first page.")
-    else:
-        print(f"❌ Introduction PDF '{intro_pdf}' not found! Make sure it's in the repository root.")
-
-    merger.append(photo_pdf_path)
-    merger.write(full_book_path)
-    merger.close()
-    
-    print(f"✅ Final merged PDF created for KDP upload: {full_book_path}")
-except Exception as e:
-    print(f"❌ Error merging PDFs: {e}")
-    raise
-
 # Copy background.jpg to book_to_publish
 if os.path.exists(background_image):
     background_dest = os.path.join(output_dir, "background.jpg")
@@ -71,7 +48,7 @@ if os.path.exists(background_image):
 else:
     print(f"❌ Background image '{background_image}' not found!")
 
-print("✅ Full book PDF for KDP successfully saved in 'book_to_publish/'")
+print("✅ Final photo collection PDF successfully saved in 'book_to_publish/'")
 
 
 
