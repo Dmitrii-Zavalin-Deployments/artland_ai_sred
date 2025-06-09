@@ -69,11 +69,6 @@ jobs:
       - name: Generate background image
         run: python3 generate_background.py
 
-      - name: Resample background image to 350 DPI
-        run: |
-          chmod +x resample_background.sh
-          ./resample_background.sh
-
       - name: Generate photo collection PDF
         run: python3 generate_photo_pdf.py
 
