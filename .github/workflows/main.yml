@@ -56,6 +56,9 @@ jobs:
       - name: Generate background image
         run: python3 generate_background.py
 
+      - name: Expand background image
+        run: python3 expand_image.py
+
       - name: Generate photo collection PDF
         run: python3 generate_photo_pdf.py
 
